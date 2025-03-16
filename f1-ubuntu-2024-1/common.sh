@@ -90,8 +90,8 @@ EOL
     log_message "** VNC is now available at: $PUBLIC_IP:5901"
 }
 
-recipe_build_clone_aws_repo() {
-    log_message " ##### Recipe: recipe_build_clone_aws_repo"
+recipe_clone_aws_repo() {
+    log_message " ##### Recipe: recipe_clone_aws_repo"
     USER=$(whoami)
     mkdir -p $AWS_FPGA_REPO_DIR
 
