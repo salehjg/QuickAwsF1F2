@@ -2,7 +2,7 @@
 
 set -e  # Exit on error
 set -o pipefail  # Catch pipeline errors
-set -x  # Debug mode
+# set -x  # Debug mode
 
 # Variables
 CMAKE_VERSION="3.31.5"
