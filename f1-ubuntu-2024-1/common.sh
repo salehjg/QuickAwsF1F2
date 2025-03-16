@@ -38,6 +38,7 @@ verify_installation() {
 
 
 recipe_build_cmake() {
+    log_message " ##### Recipe: recipe_build_cmake"
     if command -v cmake &>/dev/null; then
         INSTALLED_VERSION=$(cmake --version | head -n1 | awk '{print $3}')
         if [ "$INSTALLED_VERSION" == "$CMAKE_VERSION" ]; then
@@ -54,6 +55,7 @@ recipe_build_cmake() {
 }
 
 recipe_vnc_server() {
+    log_message " ##### Recipe: recipe_vnc_server"
     USER=$(whoami)
     log_message "Detected user: $USER"
     sudo apt update
@@ -89,6 +91,7 @@ EOL
 }
 
 recipe_build_clone_aws_repo() {
+    log_message " ##### Recipe: recipe_build_clone_aws_repo"
     USER=$(whoami)
     mkdir -p $AWS_FPGA_REPO_DIR
 
@@ -101,6 +104,7 @@ recipe_build_clone_aws_repo() {
 }
 
 recipe_setup_aws_vitis() {
+    log_message " ##### Recipe: recipe_setup_aws_vitis"
     cd $AWS_FPGA_REPO_DIR
     source vitis_setup.sh
     # Check if the variable is already defined in ~/.bashrc
@@ -134,6 +138,7 @@ recipe_setup_aws_vitis() {
 }
 
 recipe_setup_aws_xrt() {
+    log_message " ##### Recipe: recipe_setup_aws_xrt"
     XRT_RELEASE_TAG=202410.2.17.319 # Substitute XRT_RELEASE_TAG=<TAG from above table>
     cd $AWS_FPGA_REPO_DIR
     source vitis_setup.sh
