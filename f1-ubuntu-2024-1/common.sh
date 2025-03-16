@@ -11,9 +11,9 @@ INSTALL_PREFIX="/usr/local"
 NUM_CORES=$(nproc)
 
 export AWS_FPGA_REPO_DIR=~/aws/
+LOG_FILE="$(pwd)/msg.log"
 
 log_message() {
-    local LOG_FILE="msg.log"
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $*" >> "$LOG_FILE"
 }
 
