@@ -12,18 +12,6 @@ NUM_CORES=$(nproc)
 
 export AWS_FPGA_REPO_DIR=~/aws/
 
-check_cmake_installed() {
-    if command -v cmake &>/dev/null; then
-        INSTALLED_VERSION=$(cmake --version | head -n1 | awk '{print $3}')
-        if [ "$INSTALLED_VERSION" == "$CMAKE_VERSION" ]; then
-            echo "CMake $CMAKE_VERSION is already installed. Skipping build."
-            exit 0
-        else
-            echo "Installed CMake version ($INSTALLED_VERSION) does not match required version ($CMAKE_VERSION). Proceeding with build."
-        fi
-    fi
-}
-
 install_dependencies() {
     sudo apt update && sudo apt install -y unzip build-essential libssl-dev
 }
@@ -45,10 +33,19 @@ verify_installation() {
 
 
 recipe_build_cmake() {
-    check_cmake_installed
-    install_dependencies
-    download_and_build_cmake
-    verify_installation
+    if command -v cmake &>/dev/null; then
+        INSTALLED_VERSION=$(cmake --version | head -n1 | awk '{print $3}')
+        if [ "$INSTALLED_VERSION" == "$CMAKE_VERSION" ]; then
+            echo "CMake $CMAKE_VERSION is already installed. Skipping build."
+        else
+            echo "Installed CMake version ($INSTALLED_VERSION) does not match required version ($CMAKE_VERSION). Please uninstall it."
+            exit 1
+        fi
+    else
+        install_dependencies
+        download_and_build_cmake
+        verify_installation
+    fi
 }
 
 recipe_vnc_server() {
