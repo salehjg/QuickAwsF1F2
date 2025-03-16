@@ -12,6 +12,11 @@ NUM_CORES=$(nproc)
 
 export AWS_FPGA_REPO_DIR=~/aws/
 
+log_message() {
+    local LOG_FILE="msg.log"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $*" >> "$LOG_FILE"
+}
+
 install_dependencies() {
     sudo apt update && sudo apt install -y unzip build-essential libssl-dev
 }
@@ -28,7 +33,7 @@ download_and_build_cmake() {
 
 verify_installation() {
     cmake --version
-    echo "CMake $CMAKE_VERSION installed successfully."
+    log_message "CMake $CMAKE_VERSION installed successfully."
 }
 
 
@@ -36,9 +41,9 @@ recipe_build_cmake() {
     if command -v cmake &>/dev/null; then
         INSTALLED_VERSION=$(cmake --version | head -n1 | awk '{print $3}')
         if [ "$INSTALLED_VERSION" == "$CMAKE_VERSION" ]; then
-            echo "CMake $CMAKE_VERSION is already installed. Skipping build."
+            log_message "CMake $CMAKE_VERSION is already installed. Skipping build."
         else
-            echo "Installed CMake version ($INSTALLED_VERSION) does not match required version ($CMAKE_VERSION). Please uninstall it."
+            log_message "Installed CMake version ($INSTALLED_VERSION) does not match required version ($CMAKE_VERSION). Please uninstall it."
             exit 1
         fi
     else
@@ -50,7 +55,7 @@ recipe_build_cmake() {
 
 recipe_vnc_server() {
     USER=$(whoami)
-    echo "Detected user: $USER"
+    log_message "Detected user: $USER"
     sudo apt update
     sudo apt install -y git
     sudo apt install -y linux-headers-$(uname -r)
@@ -75,17 +80,16 @@ EOL
     sudo systemctl stop ufw
     sudo systemctl disable ufw
     sudo passwd $USER
-    vncserver -kill :1
+    #vncserver -kill :1
     vncserver :1 -geometry 1920x1080 -localhost no
     VNC_LOG_PATH="$HOME/.vnc/$(hostname):1.log"
-    echo "VNC log file can be found at: $VNC_LOG_PATH"
+    log_message "VNC log file can be found at: $VNC_LOG_PATH"
     PUBLIC_IP=$(curl -s ifconfig.me)
-    echo "** VNC is now available at: $PUBLIC_IP:5901"
+    log_message "** VNC is now available at: $PUBLIC_IP:5901"
 }
 
 recipe_build_clone_aws_repo() {
     USER=$(whoami)
-    echo "Detected user: $USER"
     mkdir -p $AWS_FPGA_REPO_DIR
 
     sudo apt update
@@ -101,11 +105,11 @@ recipe_setup_aws_vitis() {
     source vitis_setup.sh
     # Check if the variable is already defined in ~/.bashrc
     if grep -q "export AWS_PLATFORM=" ~/.bashrc; then
-        echo "AWS_PLATFORM is already defined in ~/.bashrc. Updating it to the new value."
+        log_message "AWS_PLATFORM is already defined in ~/.bashrc. Updating it to the new value."
         # Update the existing value in ~/.bashrc
         sed -i "s|^export AWS_PLATFORM=.*|export AWS_PLATFORM=\"$AWS_PLATFORM\"|" ~/.bashrc
     else
-        echo "Adding AWS_PLATFORM to ~/.bashrc."
+        log_message "Adding AWS_PLATFORM to ~/.bashrc."
         # Append the export command to ~/.bashrc
         echo "export AWS_PLATFORM=\"$AWS_PLATFORM\"" >> ~/.bashrc
     fi
@@ -114,19 +118,19 @@ recipe_setup_aws_vitis() {
 
     # Check if PLATFORM_REPO_PATHS is already defined in ~/.bashrc
     if grep -q "export PLATFORM_REPO_PATHS=" ~/.bashrc; then
-        echo "PLATFORM_REPO_PATHS is already defined in ~/.bashrc. Updating it to the new value."
+        log_message "PLATFORM_REPO_PATHS is already defined in ~/.bashrc. Updating it to the new value."
         # Update the existing value in ~/.bashrc
         sed -i "s|^export PLATFORM_REPO_PATHS=.*|export PLATFORM_REPO_PATHS=\"$PLATFORM_REPO_PATHS\"|" ~/.bashrc
     else
-        echo "Adding PLATFORM_REPO_PATHS to ~/.bashrc."
+        log_message "Adding PLATFORM_REPO_PATHS to ~/.bashrc."
         # Append the export command to ~/.bashrc
         echo "export PLATFORM_REPO_PATHS=\"$PLATFORM_REPO_PATHS\"" >> ~/.bashrc
     fi
 
     source ~/.bashrc
-    echo "To confirm that the setup is correct, please run: /opt/Xilinx/Vitis/2024.1/bin/platforminfo -l"
-    echo "** AWS_PLATFORM is set to: $AWS_PLATFORM"
-    echo "** PLATFORM_REPO_PATHS is set to: $PLATFORM_REPO_PATHS"
+    log_message "To confirm that the setup is correct, please run: /opt/Xilinx/Vitis/2024.1/bin/platforminfo -l"
+    log_message "** AWS_PLATFORM is set to: $AWS_PLATFORM"
+    log_message "** PLATFORM_REPO_PATHS is set to: $PLATFORM_REPO_PATHS"
 }
 
 recipe_setup_aws_xrt() {
