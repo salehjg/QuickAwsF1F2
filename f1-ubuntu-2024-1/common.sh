@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e  # Exit on error
+#set -e  # Exit on error
 set -o pipefail  # Catch pipeline errors
 # set -x  # Debug mode
 
