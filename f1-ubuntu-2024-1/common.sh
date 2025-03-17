@@ -154,4 +154,5 @@ recipe_setup_aws_xrt() {
 
     cd Release
     sudo apt install ./xrt_*.deb
+    log_message "XRT installed successfully from $(pwd)/xrt_*.deb"
 }
