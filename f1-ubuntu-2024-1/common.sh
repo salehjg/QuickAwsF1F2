@@ -11,6 +11,11 @@ log_message() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $*" >> "$LOG_FILE"
 }
 
+recipe_install_utils() {
+    sudo apt update
+    sudo apt install -y terminator fish unzip htop
+}
+
 recipe_build_cmake() {
     log_message " ##### Recipe: recipe_build_cmake"
     local CMAKE_VERSION="3.31.5"

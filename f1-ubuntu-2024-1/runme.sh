@@ -2,6 +2,7 @@
 source common.sh
 
 {
+    recipe_install_utils
     recipe_install_cmake_from_apt
     #recipe_build_cmake
     recipe_vnc_server
