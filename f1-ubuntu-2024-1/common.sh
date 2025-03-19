@@ -143,6 +143,9 @@ recipe_setup_aws_vitis() {
     log_message "To confirm that the setup is correct, please run: /opt/Xilinx/Vitis/2024.1/bin/platforminfo -l"
     log_message "** AWS_PLATFORM is set to: $AWS_PLATFORM"
     log_message "** PLATFORM_REPO_PATHS is set to: $PLATFORM_REPO_PATHS"
+
+    log_message "Before using anything related to AWS F1, you should source vitis_setup.sh in the aws-fpga directory."
+    log_message "Otherwise, sourcing the Vivado/Vitis' original settings64.sh will suffice."
 }
 
 recipe_setup_aws_xrt() {
@@ -163,4 +166,7 @@ recipe_setup_aws_xrt() {
     cd Release
     sudo apt install ./xrt_*.deb
     log_message "XRT installed successfully from $(pwd)/xrt_*.deb"
+
+    echo "source /opt/xilinx/xrt/setup.sh" >> ~/.bashrc
+    log_message "XRT initialization script added to ~/.bashrc"
 }
