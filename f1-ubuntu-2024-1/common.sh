@@ -4,12 +4,6 @@
 set -o pipefail  # Catch pipeline errors
 # set -x  # Debug mode
 
-# Variables
-CMAKE_VERSION="3.31.5"
-CMAKE_URL="https://github.com/Kitware/CMake/archive/refs/tags/v${CMAKE_VERSION}.zip"
-INSTALL_PREFIX="/usr/local"
-NUM_CORES=$(nproc)
-
 export AWS_FPGA_REPO_DIR=~/aws/
 LOG_FILE="$(pwd)/msg.log"
 
@@ -17,28 +11,14 @@ log_message() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $*" >> "$LOG_FILE"
 }
 
-install_dependencies() {
-    sudo apt update && sudo apt install -y unzip build-essential libssl-dev
-}
-
-download_and_build_cmake() {
-    wget "$CMAKE_URL" -O "cmake-${CMAKE_VERSION}.zip"
-    unzip "cmake-${CMAKE_VERSION}.zip"
-    cd "CMake-${CMAKE_VERSION}" || exit 1
-
-    ./bootstrap --prefix="$INSTALL_PREFIX"
-    make -j "$NUM_CORES"
-    sudo make install
-}
-
-verify_installation() {
-    cmake --version
-    log_message "CMake $CMAKE_VERSION installed successfully."
-}
-
-
 recipe_build_cmake() {
     log_message " ##### Recipe: recipe_build_cmake"
+    local CMAKE_VERSION="3.31.5"
+    local CMAKE_URL="https://github.com/Kitware/CMake/archive/refs/tags/v${CMAKE_VERSION}.zip"
+    local INSTALL_PREFIX="/usr/local"
+    local NUM_CORES
+    NUM_CORES=$(nproc)
+
     if command -v cmake &>/dev/null; then
         INSTALLED_VERSION=$(cmake --version | head -n1 | awk '{print $3}')
         if [ "$INSTALLED_VERSION" == "$CMAKE_VERSION" ]; then
@@ -48,19 +28,29 @@ recipe_build_cmake() {
             exit 1
         fi
     else
-        install_dependencies
-        download_and_build_cmake
-        verify_installation
+        sudo apt update && sudo apt install -y unzip build-essential libssl-dev
+        wget "$CMAKE_URL" -O "cmake-${CMAKE_VERSION}.zip"
+        unzip "cmake-${CMAKE_VERSION}.zip"
+        cd "CMake-${CMAKE_VERSION}" || exit 1
+
+        ./bootstrap --prefix="$INSTALL_PREFIX"
+        make -j "$NUM_CORES"
+        sudo make install
+
+        cmake --version
+        log_message "CMake $CMAKE_VERSION installed successfully."
     fi
 }
 
 recipe_install_cmake_from_apt() {
     log_message " ##### Recipe: recipe_install_cmake_from_apt"
+
+    if command -v cmake &>/dev/null; then
+        sudo apt remove --purge --auto-remove cmake
+    fi
+
     # https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
-    sudo apt remove --purge --auto-remove cmake
-    sudo apt update && \
-    sudo apt install -y software-properties-common lsb-release && \
-    sudo apt clean all
+    sudo apt update && sudo apt install -y software-properties-common lsb-release && sudo apt clean all
     wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
     sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main"
     sudo apt update
@@ -69,6 +59,7 @@ recipe_install_cmake_from_apt() {
 
     sudo apt update
     sudo apt install cmake
+    log_message "CMake version $(cmake --version) installed successfully from kitware apt repo."
 }
 
 recipe_vnc_server() {
