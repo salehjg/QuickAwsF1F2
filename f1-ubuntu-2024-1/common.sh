@@ -54,6 +54,23 @@ recipe_build_cmake() {
     fi
 }
 
+recipe_install_cmake_from_apt() {
+    log_message " ##### Recipe: recipe_install_cmake_from_apt"
+    # https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
+    sudo apt remove --purge --auto-remove cmake
+    sudo apt update && \
+    sudo apt install -y software-properties-common lsb-release && \
+    sudo apt clean all
+    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+    sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main"
+    sudo apt update
+    sudo apt install kitware-archive-keyring
+    sudo rm /etc/apt/trusted.gpg.d/kitware.gpg
+
+    sudo apt update
+    sudo apt install cmake
+}
+
 recipe_vnc_server() {
     log_message " ##### Recipe: recipe_vnc_server"
     USER=$(whoami)
