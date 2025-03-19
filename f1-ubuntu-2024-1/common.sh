@@ -46,7 +46,7 @@ recipe_install_cmake_from_apt() {
     log_message " ##### Recipe: recipe_install_cmake_from_apt"
 
     if command -v cmake &>/dev/null; then
-        sudo apt remove --purge --auto-remove cmake
+        sudo apt remove -y --purge --auto-remove cmake
     fi
 
     # https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
@@ -54,11 +54,11 @@ recipe_install_cmake_from_apt() {
     wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
     sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main"
     sudo apt update
-    sudo apt install kitware-archive-keyring
+    sudo apt install -y kitware-archive-keyring
     sudo rm /etc/apt/trusted.gpg.d/kitware.gpg
 
     sudo apt update
-    sudo apt install cmake
+    sudo apt install -y cmake
     log_message "CMake version $(cmake --version) installed successfully from kitware apt repo."
 }
 
