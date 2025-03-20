@@ -18,7 +18,7 @@ recipe_install_utils() {
 
 recipe_build_cmake() {
     log_message " ##### Recipe: recipe_build_cmake"
-    local CMAKE_VERSION="3.31.5"
+    local CMAKE_VERSION="3.29.6"
     local CMAKE_URL="https://github.com/Kitware/CMake/archive/refs/tags/v${CMAKE_VERSION}.zip"
     local INSTALL_PREFIX="/usr/local"
     local NUM_CORES
