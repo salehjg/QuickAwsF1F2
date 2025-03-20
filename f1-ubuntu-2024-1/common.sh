@@ -63,7 +63,7 @@ recipe_install_cmake_from_apt() {
     sudo rm /etc/apt/trusted.gpg.d/kitware.gpg
 
     sudo apt update
-    sudo apt install -y cmake
+    sudo apt install -y cmake=3.29.6-0kitware1ubuntu20.04.1 cmake-data=3.29.6-0kitware1ubuntu20.04.1
     log_message "CMake version $(cmake --version) installed successfully from kitware apt repo."
 }
 
@@ -172,6 +172,6 @@ recipe_setup_aws_xrt() {
     sudo apt install ./xrt_*.deb
     log_message "XRT installed successfully from $(pwd)/xrt_*.deb"
 
-    echo "source /opt/xilinx/xrt/setup.sh" >> ~/.bashrc
+    echo "source /opt/xilinx/xrt/setup.sh > /dev/null 2>&1 # to prevent conflicts with rsync." >> ~/.bashrc
     log_message "XRT initialization script added to ~/.bashrc"
 }
