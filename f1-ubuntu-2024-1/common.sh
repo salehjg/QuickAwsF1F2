@@ -13,7 +13,7 @@ log_message() {
 
 recipe_install_utils() {
     sudo apt update
-    sudo apt install -y terminator fish unzip htop
+    sudo apt install -y terminator fish unzip htop clangd
 }
 
 recipe_build_cmake() {
