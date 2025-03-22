@@ -144,6 +144,8 @@ recipe_setup_aws_vitis() {
         echo "export PLATFORM_REPO_PATHS=\"$PLATFORM_REPO_PATHS\"" >> ~/.bashrc
     fi
 
+    # XILINX_VITIS and XILINX_VIVADO are already defined in vitis_setup.sh
+
     source ~/.bashrc
     log_message "To confirm that the setup is correct, please run: /opt/Xilinx/Vitis/2024.1/bin/platforminfo -l"
     log_message "** AWS_PLATFORM is set to: $AWS_PLATFORM"
@@ -173,5 +175,10 @@ recipe_setup_aws_xrt() {
     log_message "XRT installed successfully from $(pwd)/xrt_*.deb"
 
     echo "source /opt/xilinx/xrt/setup.sh > /dev/null 2>&1 # to prevent conflicts with rsync." >> ~/.bashrc
+    echo "source /opt/Xilinx/Vitis/2024.1/settings64.sh > /dev/null 2>&1" >> ~/.bashrc
+    echo "source /opt/Xilinx/Vitis_HLS/2024.1/settings64.sh > /dev/null 2>&1" >> ~/.bashrc
+    echo "source /opt/Xilinx/Vivado/2024.1/settings64.sh > /dev/null 2>&1" >> ~/.bashrc
+    echo "alias cmake='/usr/bin/cmake'" >> ~/.bashrc
+
     log_message "XRT initialization script added to ~/.bashrc"
 }
