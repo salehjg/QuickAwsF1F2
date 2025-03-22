@@ -27,9 +27,16 @@ add_if_not_exists() {
 
 recipe_install_utils() {
     sudo apt update
-    sudo apt install -y terminator fish unzip htop clangd
+    sudo apt install -y terminator fish unzip htop
 
-
+    # Install latest clangd
+    wget https://apt.llvm.org/llvm.sh
+    chmod +x llvm.sh
+    sudo ./llvm.sh 19
+    sudo apt install -y clangd-19
+    sudo update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-19 100
+    rm llvm.sh
+    log_message "Installed clangd-19 and set it as default with update-alternatives."
 }
 
 recipe_final_steps() {
