@@ -11,9 +11,43 @@ log_message() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $*" >> "$LOG_FILE"
 }
 
+# Function to add a line if it doesn't exist
+add_if_not_exists() {
+    local line="$1"
+    local config_file="$2"
+    
+    # Check if the configuration already exists (ignoring commented lines)
+    if ! sudo grep -q "^${line}" "$config_file"; then
+        echo "Adding: $line"
+        echo "$line" | sudo tee -a "$config_file" > /dev/null
+    else
+        echo "Line already exists: $line"
+    fi
+}
+
 recipe_install_utils() {
     sudo apt update
     sudo apt install -y terminator fish unzip htop clangd
+
+
+}
+
+recipe_final_steps() {
+    # increase sshd timeout, see https://bobcares.com/blog/ssh-timeout-server-not-responding/
+    local SSH_CONFIG="/etc/ssh/sshd_config"
+
+    # Add each line if it doesn't exist
+    add_if_not_exists "KeepAlive yes" "$SSH_CONFIG"
+    add_if_not_exists "ClientAliveInterval 120" "$SSH_CONFIG"
+    add_if_not_exists "ClientAliveCountMax 2" "$SSH_CONFIG"
+
+    log_message "SSH configuration update complete"
+    log_message "Restarting SSH service..."
+
+    # Restart SSH service with systemd
+    sudo systemctl restart sshd
+
+    log_message "SSH service has been restarted."
 }
 
 recipe_build_cmake() {

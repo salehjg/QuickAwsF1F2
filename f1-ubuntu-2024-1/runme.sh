@@ -13,5 +13,6 @@ source common.sh
     recipe_clone_aws_repo
     recipe_setup_aws_vitis
     recipe_setup_aws_xrt
+    recipe_final_steps
 } 2>&1 | tee full.log
 
