@@ -28,7 +28,7 @@ add_if_not_exists() {
 recipe_first_steps() {
     # We first write stuff to activate.sh, then in recipe_last_steps() we make a copy of it to cmakewrapper and add another line to it.
     echo "#!/bin/bash" > ~/activate.sh
-    echo "if [[ -z "$MY_ENV_ACTIVATED" ]]; then" >> ~/activate.sh
+    echo "if [[ -z "\$MY_ENV_ACTIVATED" ]]; then" >> ~/activate.sh
     echo "  export MY_ENV_ACTIVATED=1" >> ~/activate.sh
     sudo apt update
     sudo apt install -y terminator fish unzip htop
@@ -37,20 +37,20 @@ recipe_first_steps() {
     wget https://apt.llvm.org/llvm.sh
     chmod +x llvm.sh
     sudo ./llvm.sh 19
-    sudo apt install -y clangd-19
+    sudo apt install -y clangd-19 ninja-build
     sudo update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-19 100
     rm llvm.sh
     log_message "Installed clangd-19 and set it as default with update-alternatives."
 }
 
 recipe_last_steps() {
-    echo "  export PATH=$PATH" >> ~/activate.sh 
-    echo "  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> ~/activate.sh
+    echo "  export PATH=\$PATH" >> ~/activate.sh 
+    echo "  export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH" >> ~/activate.sh
     echo "fi" >> ~/activate.sh
     cp ~/activate.sh ~/cmakewrapper
     sudo chmod +x ~/activate.sh
     sudo chmod +x ~/cmakewrapper
-    echo "/usr/bin/cmake \"$@\"" >> ~/cmakewrapper
+    echo "/usr/bin/cmake \"\$@\"" >> ~/cmakewrapper
 
     log_message "Finalized ~/activate.sh, you have to source it before using anything F1 and Vitis related."
     log_message "Finalized ~/cmakewrapper, use it instead of the cmake executable. No need to source activate.sh before. No need to worry about double sourcing."
@@ -63,6 +63,7 @@ recipe_last_steps() {
     add_if_not_exists "ClientAliveInterval 120" "$SSH_CONFIG"
     add_if_not_exists "ClientAliveCountMax 2" "$SSH_CONFIG"
 
+    echo "About to restart the ssh service. The ssh connection will drop."
     log_message "SSH configuration update complete"
     log_message "Restarting SSH service..."
 
@@ -119,7 +120,8 @@ recipe_install_cmake_from_apt() {
     sudo rm /etc/apt/trusted.gpg.d/kitware.gpg
 
     sudo apt update
-    sudo apt install -y cmake=3.29.6-0kitware1ubuntu20.04.1 cmake-data=3.29.6-0kitware1ubuntu20.04.1
+    # w/o --allow-downgrades the latest version will be installed!
+    sudo apt install -y --allow-downgrades cmake=3.29.6-0kitware1ubuntu20.04.1 cmake-data=3.29.6-0kitware1ubuntu20.04.1
     log_message "CMake version $(cmake --version) installed successfully from kitware apt repo."
 }
 
@@ -209,9 +211,6 @@ recipe_setup_aws_xrt() {
     echo "  source /opt/Xilinx/Vitis/2024.1/settings64.sh > /dev/null 2>&1" >> ~/activate.sh
     echo "  source /opt/Xilinx/Vitis_HLS/2024.1/settings64.sh > /dev/null 2>&1" >> ~/activate.sh
     echo "  source /opt/Xilinx/Vivado/2024.1/settings64.sh > /dev/null 2>&1" >> ~/activate.sh
-    # This is to avoid the old cmake shipped in Vitis to be the deafult system-wide one. Using alias seems to break some cases. 
-    # I tried update-alternatives but that also broke some cases.
-    echo "  export PATH=/usr/bin:$PATH" >> ~/activate.sh 
 
     log_message "XRT initialization script added to ~/activate.sh"
 }
