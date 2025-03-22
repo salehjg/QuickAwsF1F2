@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.20)
 # This is absolutely necessary to use the Vitis CMake functions
 set(PROGRAM_PLATFORM_PART "xcvu9p-flga2104-2-e" CACHE INTERNAL "F1 part number")
 
+# for clangd
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(HelloWorld)
 
