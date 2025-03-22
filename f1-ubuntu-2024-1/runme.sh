@@ -6,13 +6,15 @@ source common.sh
 # (Vivado and ISE DS applications have boot loaders) to set up the necessary environment needed to run the application.
 
 {
-    recipe_install_utils
+    recipe_first_steps
+    
     recipe_install_cmake_from_apt
     #recipe_build_cmake
     recipe_vnc_server
     recipe_clone_aws_repo
     recipe_setup_aws_vitis
     recipe_setup_aws_xrt
-    recipe_final_steps
+    
+    recipe_last_steps
 } 2>&1 | tee full.log
 

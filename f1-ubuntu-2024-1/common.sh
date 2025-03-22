@@ -25,7 +25,11 @@ add_if_not_exists() {
     fi
 }
 
-recipe_install_utils() {
+recipe_first_steps() {
+    # We first write stuff to activate.sh, then in recipe_last_steps() we make a copy of it to cmakewrapper and add another line to it.
+    echo "#!/bin/bash" > ~/activate.sh
+    echo "if [[ -z "$MY_ENV_ACTIVATED" ]]; then" >> ~/activate.sh
+    echo "  export MY_ENV_ACTIVATED=1" >> ~/activate.sh
     sudo apt update
     sudo apt install -y terminator fish unzip htop
 
@@ -39,7 +43,18 @@ recipe_install_utils() {
     log_message "Installed clangd-19 and set it as default with update-alternatives."
 }
 
-recipe_final_steps() {
+recipe_last_steps() {
+    echo "  export PATH=$PATH" >> ~/activate.sh 
+    echo "  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> ~/activate.sh
+    echo "fi" >> ~/activate.sh
+    cp ~/activate.sh ~/cmakewrapper
+    sudo chmod +x ~/activate.sh
+    sudo chmod +x ~/cmakewrapper
+    echo "/usr/bin/cmake \"$@\"" >> ~/cmakewrapper
+
+    log_message "Finalized ~/activate.sh, you have to source it before using anything F1 and Vitis related."
+    log_message "Finalized ~/cmakewrapper, use it instead of the cmake executable. No need to source activate.sh before. No need to worry about double sourcing."
+    
     # increase sshd timeout, see https://bobcares.com/blog/ssh-timeout-server-not-responding/
     local SSH_CONFIG="/etc/ssh/sshd_config"
 
@@ -161,39 +176,14 @@ recipe_setup_aws_vitis() {
     log_message " ##### Recipe: recipe_setup_aws_vitis"
     cd $AWS_FPGA_REPO_DIR
     source vitis_setup.sh
-    # Check if the variable is already defined in ~/.bashrc
-    if grep -q "export AWS_PLATFORM=" ~/.bashrc; then
-        log_message "AWS_PLATFORM is already defined in ~/.bashrc. Updating it to the new value."
-        # Update the existing value in ~/.bashrc
-        sed -i "s|^export AWS_PLATFORM=.*|export AWS_PLATFORM=\"$AWS_PLATFORM\"|" ~/.bashrc
-    else
-        log_message "Adding AWS_PLATFORM to ~/.bashrc."
-        # Append the export command to ~/.bashrc
-        echo "export AWS_PLATFORM=\"$AWS_PLATFORM\"" >> ~/.bashrc
-    fi
+    echo "  export AWS_PLATFORM=\"$AWS_PLATFORM\"" >> ~/activate.sh
 
     PLATFORM_REPO_PATHS="$(dirname "$AWS_PLATFORM")"
+    echo "  export PLATFORM_REPO_PATHS=\"$PLATFORM_REPO_PATHS\"" >> ~/activate.sh
 
-    # Check if PLATFORM_REPO_PATHS is already defined in ~/.bashrc
-    if grep -q "export PLATFORM_REPO_PATHS=" ~/.bashrc; then
-        log_message "PLATFORM_REPO_PATHS is already defined in ~/.bashrc. Updating it to the new value."
-        # Update the existing value in ~/.bashrc
-        sed -i "s|^export PLATFORM_REPO_PATHS=.*|export PLATFORM_REPO_PATHS=\"$PLATFORM_REPO_PATHS\"|" ~/.bashrc
-    else
-        log_message "Adding PLATFORM_REPO_PATHS to ~/.bashrc."
-        # Append the export command to ~/.bashrc
-        echo "export PLATFORM_REPO_PATHS=\"$PLATFORM_REPO_PATHS\"" >> ~/.bashrc
-    fi
-
-    # XILINX_VITIS and XILINX_VIVADO are already defined in vitis_setup.sh
-
-    source ~/.bashrc
     log_message "To confirm that the setup is correct, please run: /opt/Xilinx/Vitis/2024.1/bin/platforminfo -l"
     log_message "** AWS_PLATFORM is set to: $AWS_PLATFORM"
     log_message "** PLATFORM_REPO_PATHS is set to: $PLATFORM_REPO_PATHS"
-
-    log_message "Before using anything related to AWS F1, you should source vitis_setup.sh in the aws-fpga directory."
-    log_message "Otherwise, sourcing the Vivado/Vitis' original settings64.sh will suffice."
 }
 
 recipe_setup_aws_xrt() {
@@ -215,11 +205,13 @@ recipe_setup_aws_xrt() {
     sudo apt install ./xrt_*.deb
     log_message "XRT installed successfully from $(pwd)/xrt_*.deb"
 
-    echo "source /opt/xilinx/xrt/setup.sh > /dev/null 2>&1 # to prevent conflicts with rsync." >> ~/.bashrc
-    echo "source /opt/Xilinx/Vitis/2024.1/settings64.sh > /dev/null 2>&1" >> ~/.bashrc
-    echo "source /opt/Xilinx/Vitis_HLS/2024.1/settings64.sh > /dev/null 2>&1" >> ~/.bashrc
-    echo "source /opt/Xilinx/Vivado/2024.1/settings64.sh > /dev/null 2>&1" >> ~/.bashrc
-    echo "alias cmake='/usr/bin/cmake'" >> ~/.bashrc
+    echo "  source /opt/xilinx/xrt/setup.sh > /dev/null 2>&1 # to prevent conflicts with rsync." >> ~/activate.sh
+    echo "  source /opt/Xilinx/Vitis/2024.1/settings64.sh > /dev/null 2>&1" >> ~/activate.sh
+    echo "  source /opt/Xilinx/Vitis_HLS/2024.1/settings64.sh > /dev/null 2>&1" >> ~/activate.sh
+    echo "  source /opt/Xilinx/Vivado/2024.1/settings64.sh > /dev/null 2>&1" >> ~/activate.sh
+    # This is to avoid the old cmake shipped in Vitis to be the deafult system-wide one. Using alias seems to break some cases. 
+    # I tried update-alternatives but that also broke some cases.
+    echo "  export PATH=/usr/bin:$PATH" >> ~/activate.sh 
 
-    log_message "XRT initialization script added to ~/.bashrc"
+    log_message "XRT initialization script added to ~/activate.sh"
 }

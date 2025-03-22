@@ -1,4 +1,5 @@
 #include <iostream>
+#include "xilinx/Stream.h"
 
 
 int main() {

@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 
+#print PATH env variable
+message(STATUS "PATH = $ENV{PATH}")
+
 # This is absolutely necessary to use the Vitis CMake functions
 set(PROGRAM_PLATFORM_PART "xcvu9p-flga2104-2-e" CACHE INTERNAL "F1 part number")
 
@@ -13,7 +16,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/hlslib/cmake)
 find_package(Vitis REQUIRED)
 
 add_executable(MyHostExecutable main.cpp)
-include_directories(${Vitis_INCLUDE_DIRS})
+include_directories(${Vitis_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/hlslib/include)
 target_link_libraries(MyHostExecutable ${Vitis_LIBRARIES})
 
 # Will populate the "hw", "hw_emu", and "synthesis" targets
