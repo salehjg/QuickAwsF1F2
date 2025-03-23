@@ -1,5 +1,5 @@
 #include <iostream>
-#include "xilinx/Stream.h"
+#include "hlslib/xilinx/Stream.h"
 
 
 int main() {
